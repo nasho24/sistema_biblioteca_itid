@@ -86,3 +86,8 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Configuración para el login personalizado
+LOGIN_URL = '/administracion/login/'
+LOGIN_REDIRECT_URL = '/administracion/panel/'
+LOGOUT_REDIRECT_URL = '/administracion/login/'

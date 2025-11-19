@@ -73,6 +73,7 @@
                         <th>Estudiante</th>
                         <th>Inicio</th>
                         <th>Término</th>
+                        <th>Tiempo Restante</th>
                         <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
@@ -95,17 +96,80 @@
                         </td>
                         <td>
                             {% if reserva.fecha_hora_termino > now %}
+                                {% with tiempo_restante=reserva.tiempo_restante %}
+                                    <span class="badge bg-{% if tiempo_restante.horas == 0 and tiempo_restante.minutos < 10 %}danger{% elif tiempo_restante.horas == 0 and tiempo_restante.minutos < 30 %}warning{% else %}success{% endif %}">
+                                        {{ tiempo_restante.horas }}h {{ tiempo_restante.minutos }}m
+                                    </span>
+                                {% endwith %}
+                            {% else %}
+                                <span class="badge bg-secondary">Finalizada</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if reserva.fecha_hora_termino > now %}
                                 <span class="badge bg-success">Activa</span>
                             {% else %}
                                 <span class="badge bg-secondary">Completada</span>
                             {% endif %}
                         </td>
                         <td>
-                            <a href="{% url 'reservas:eliminar_reserva' reserva.id %}" 
-                               class="btn btn-outline-danger btn-sm"
-                               onclick="return confirm('¿Estás seguro de eliminar esta reserva?')">
-                                🗑️ Eliminar
-                            </a>
+                            <div class="btn-group btn-group-sm">
+                                <!-- Botón para finalizar inmediatamente -->
+                                {% if reserva.fecha_hora_termino > now %}
+                                <a href="{% url 'reservas:finalizar_reserva_ahora' reserva.id %}" 
+                                   class="btn btn-outline-warning btn-sm"
+                                   onclick="return confirm('¿Finalizar esta reserva inmediatamente? La sala quedará disponible.')"
+                                   title="Finalizar Ahora">
+                                    ⏹️ Terminar
+                                </a>
+                                
+                                <!-- Dropdown para reducir tiempo -->
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-info dropdown-toggle" 
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                        ⏱️ Reducir
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" 
+                                               href="{% url 'reservas:reducir_tiempo_reserva' reserva.id 5 %}"
+                                               onclick="return confirm('¿Reducir 5 minutos a esta reserva?')">
+                                                -5 minutos
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" 
+                                               href="{% url 'reservas:reducir_tiempo_reserva' reserva.id 15 %}"
+                                               onclick="return confirm('¿Reducir 15 minutos a esta reserva?')">
+                                                -15 minutos
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" 
+                                               href="{% url 'reservas:reducir_tiempo_reserva' reserva.id 30 %}"
+                                               onclick="return confirm('¿Reducir 30 minutos a esta reserva?')">
+                                                -30 minutos
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item" 
+                                               href="{% url 'reservas:reducir_tiempo_reserva' reserva.id 60 %}"
+                                               onclick="return confirm('¿Reducir 1 hora a esta reserva?')">
+                                                -1 hora
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                {% endif %}
+                                
+                                <!-- Botón eliminar -->
+                                <a href="{% url 'reservas:eliminar_reserva' reserva.id %}" 
+                                   class="btn btn-outline-danger btn-sm"
+                                   onclick="return confirm('¿Eliminar permanentemente esta reserva? Esta acción no se puede deshacer.')">
+                                    🗑️ Eliminar
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -121,6 +185,29 @@
             </a>
         </div>
         {% endif %}
+    </div>
+</div>
+
+<!-- Información de colores -->
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h6>📊 Leyenda de Tiempo Restante:</h6>
+            <div class="row">
+                <div class="col-md-3">
+                    <span class="badge bg-success">2h 30m</span> - Más de 30 minutos
+                </div>
+                <div class="col-md-3">
+                    <span class="badge bg-warning">0h 25m</span> - Menos de 30 minutos
+                </div>
+                <div class="col-md-3">
+                    <span class="badge bg-danger">0h 5m</span> - Menos de 10 minutos
+                </div>
+                <div class="col-md-3">
+                    <span class="badge bg-secondary">Finalizada</span> - Tiempo cumplido
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

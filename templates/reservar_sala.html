@@ -24,8 +24,15 @@
                             <h5 class="alert-heading">Información de la Reserva</h5>
                             <p class="mb-1"><strong>Sala:</strong> {{ sala.nombre }}</p>
                             <p class="mb-1"><strong>Capacidad:</strong> {{ sala.capacidad_maxima }} personas</p>
-                            <p class="mb-1"><strong>Duración:</strong> 2 horas máximo</p>
+                            <p class="mb-1"><strong>Duración máxima:</strong> 2 horas</p>
                             <p class="mb-0"><strong>Hora de inicio:</strong> <span class="current-time"></span></p>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <small>
+                                <strong>⏰ Duración Flexible:</strong> Puedes elegir desde 15 minutos hasta 2 horas.
+                                La sala se liberará automáticamente al cumplirse el tiempo seleccionado.
+                            </small>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -47,10 +54,25 @@
                                 </div>
                             </div>
 
+                            <div class="mb-3">
+                                <label for="{{ form.duracion_minutos.id_for_label }}" class="form-label">
+                                    Duración de la Reserva *
+                                </label>
+                                {{ form.duracion_minutos }}
+                                {% if form.duracion_minutos.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.duracion_minutos.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    Selecciona por cuánto tiempo necesitas la sala
+                                </div>
+                            </div>
+
                             <div class="alert alert-warning">
                                 <small>
                                     <strong>⚠️ Importante:</strong> Al reservar, aceptas que la sala será 
-                                    asignada por 2 horas máximo. El sistema liberará automáticamente 
+                                    asignada por el tiempo seleccionado. El sistema liberará automáticamente 
                                     la sala al cumplirse el tiempo.
                                 </small>
                             </div>
@@ -72,19 +94,41 @@
 </div>
 
 <script>
-// Script específico para la página de reserva
+// Script para mostrar la hora de término estimada
 document.addEventListener('DOMContentLoaded', function() {
+    const duracionSelect = document.getElementById('duracion-select');
+    const horaInicioElement = document.querySelector('.current-time');
+    
+    function actualizarHoraTermino() {
+        if (duracionSelect && horaInicioElement) {
+            const duracionMinutos = parseInt(duracionSelect.value);
+            const ahora = new Date();
+            const horaTermino = new Date(ahora.getTime() + duracionMinutos * 60000);
+            
+            const opcionSeleccionada = duracionSelect.options[duracionSelect.selectedIndex].text;
+            
+            // Actualizar el mensaje informativo
+            const infoDiv = document.querySelector('.alert-info');
+            if (infoDiv) {
+                const duracionText = infoDiv.querySelector('.mb-1:nth-child(3)');
+                if (duracionText) {
+                    duracionText.innerHTML = `<strong>Duración seleccionada:</strong> ${opcionSeleccionada}`;
+                }
+            }
+        }
+    }
+    
+    if (duracionSelect) {
+        duracionSelect.addEventListener('change', actualizarHoraTermino);
+        actualizarHoraTermino(); // Ejecutar al cargar la página
+    }
+    
     const form = document.getElementById('reservaForm');
     const submitBtn = document.getElementById('submitBtn');
     
     if (form && submitBtn) {
         form.addEventListener('submit', function(e) {
             const originalText = window.app.showButtonLoading(submitBtn, 'Reservando...');
-            
-            // Simular procesamiento (en producción esto sería real)
-            setTimeout(() => {
-                // La reserva se procesa normalmente
-            }, 1000);
         });
     }
 });

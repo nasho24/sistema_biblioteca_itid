@@ -7,6 +7,10 @@ from datetime import timedelta
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 
+
+def es_staff(user):
+    return user.is_staff
+
 def index(request):
     """
     Vista principal que muestra todas las salas disponibles
@@ -60,7 +64,7 @@ def detalle_sala(request, sala_id):
 
 def reservar_sala(request, sala_id):
     """
-    Vista para realizar una reserva
+    Vista para realizar una reserva con duración personalizada
     """
     sala = get_object_or_404(Sala, id=sala_id, habilitada=True)
     
@@ -75,10 +79,31 @@ def reservar_sala(request, sala_id):
             reserva = form.save(commit=False)
             reserva.sala = sala
             reserva.fecha_hora_inicio = timezone.now()
-            reserva.save()
             
-            messages.success(request, f'¡Reserva realizada con éxito para la sala {sala.nombre}!')
-            return redirect('reservas:index')
+            # Calcular fecha_hora_termino basado en la duración
+            duracion_minutos = form.cleaned_data['duracion_minutos']
+            reserva.fecha_hora_termino = timezone.now() + timedelta(minutes=duracion_minutos)
+            
+            try:
+                reserva.save()
+                
+                # Mensaje con la duración seleccionada
+                if duracion_minutos == 120:
+                    duracion_texto = "2 horas"
+                elif duracion_minutos == 60:
+                    duracion_texto = "1 hora" 
+                elif duracion_minutos == 90:
+                    duracion_texto = "1 hora 30 minutos"
+                else:
+                    duracion_texto = f"{duracion_minutos} minutos"
+                
+                messages.success(request, f'¡Reserva realizada con éxito para la sala {sala.nombre} por {duracion_texto}!')
+                return redirect('reservas:index')
+                
+            except ValueError as e:
+                messages.error(request, str(e))
+            except Exception as e:
+                messages.error(request, 'Error al crear la reserva. Por favor, intenta nuevamente.')
     else:
         form = ReservaForm()
     
@@ -86,8 +111,10 @@ def reservar_sala(request, sala_id):
         'sala': sala,
         'form': form
     }
-    return render(request, 'reservar_sala.html', context)   
+    return render(request, 'reservar_sala.html', context)
 
+@login_required
+@user_passes_test(es_staff, login_url='/administracion/login/')
 def admin_panel(request):
     """
     Panel de administración personalizado para bibliotecarios
@@ -134,9 +161,10 @@ def admin_login(request):
     """
     Login personalizado para el panel de administración
     """
+    # COMENTA ESTO temporalmente:
     # Si ya está autenticado, redirigir al panel
-    if request.user.is_authenticated and request.user.is_staff:
-        return redirect('reservas:admin_panel')  # ← Usar nombre de URL
+    # if request.user.is_authenticated and request.user.is_staff:
+    #     return redirect('reservas:admin_panel')
     
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -147,7 +175,7 @@ def admin_login(request):
         if user is not None and user.is_staff:
             login(request, user)
             messages.success(request, f'¡Bienvenido/a, {user.username}!')
-            return redirect('reservas:admin_panel')  # ← Redirigir a NUESTRO panel
+            return redirect('reservas:admin_panel')
         else:
             messages.error(request, 'Usuario o contraseña incorrectos. Acceso restringido al personal autorizado.')
     
@@ -161,8 +189,8 @@ def admin_logout(request):
     messages.success(request, 'Sesión cerrada correctamente.')
     return redirect('reservas:admin_login')  # ← Redirigir a NUESTRO login
 
-@login_required
-@user_passes_test(lambda u: u.is_staff)
+# @login_required
+# @user_passes_test(lambda u: u.is_staff)
 def admin_panel(request):
     """
     Panel de administración personalizado para bibliotecarios
@@ -295,7 +323,7 @@ def eliminar_sala(request, sala_id):
     return redirect('reservas:gestion_salas')
 
 @login_required
-@user_passes_test(lambda u: u.is_staff)
+@user_passes_test(es_staff, login_url='/administracion/login/')
 def gestion_reservas(request):
     """
     Vista para gestionar reservas (reemplaza /admin/reservas/reserva/)
@@ -318,6 +346,7 @@ def gestion_reservas(request):
         'reservas': reservas,
         'filtro_actual': filtro_estado,
         'usuario_actual': request.user,
+        'now': timezone.now(),  # ← AÑADE ESTO
     }
     return render(request, 'gestion_reservas.html', context)
 
@@ -382,5 +411,60 @@ def eliminar_reserva(request, reserva_id):
     
     reserva.delete()
     messages.success(request, f'Reserva "{info_reserva}" eliminada exitosamente!')
+    
+    return redirect('reservas:gestion_reservas')
+
+@login_required
+@user_passes_test(es_staff, login_url='/administracion/login/')
+def reducir_tiempo_reserva(request, reserva_id, minutos):
+    """
+    Reducir el tiempo de una reserva activa
+    """
+    reserva = get_object_or_404(Reserva, id=reserva_id)
+    
+    # Verificar que la reserva esté activa
+    ahora = timezone.now()
+    if reserva.fecha_hora_termino <= ahora:
+        messages.error(request, 'Esta reserva ya ha finalizado.')
+        return redirect('reservas:gestion_reservas')
+    
+    # Calcular nueva hora de término
+    nueva_hora_termino = reserva.fecha_hora_termino - timedelta(minutes=minutos)
+    
+    # Verificar que no sea menor a la hora actual
+    if nueva_hora_termino <= ahora:
+        # Si se reduce más del tiempo restante, terminar la reserva inmediatamente
+        reserva.fecha_hora_termino = ahora
+        mensaje = f'Reserva de {reserva.sala.nombre} finalizada inmediatamente.'
+    else:
+        reserva.fecha_hora_termino = nueva_hora_termino
+        # Recalcular duración
+        nueva_duracion = (reserva.fecha_hora_termino - reserva.fecha_hora_inicio).total_seconds() / 60
+        reserva.duracion_minutos = int(nueva_duracion)
+        mensaje = f'Tiempo reducido en {minutos} minutos. Nueva hora de término: {reserva.fecha_hora_termino.strftime("%H:%M")}'
+    
+    reserva.save()
+    messages.success(request, mensaje)
+    
+    return redirect('reservas:gestion_reservas')
+
+#@staff_required
+def finalizar_reserva_ahora(request, reserva_id):
+    """
+    Finalizar una reserva inmediatamente
+    """
+    reserva = get_object_or_404(Reserva, id=reserva_id)
+    
+    # Verificar que la reserva esté activa
+    ahora = timezone.now()
+    if reserva.fecha_hora_termino <= ahora:
+        messages.error(request, 'Esta reserva ya ha finalizado.')
+        return redirect('reservas:gestion_reservas')
+    
+    sala_nombre = reserva.sala.nombre
+    reserva.fecha_hora_termino = ahora
+    reserva.save()
+    
+    messages.success(request, f'Reserva de {sala_nombre} finalizada inmediatamente. Sala ahora disponible.')
     
     return redirect('reservas:gestion_reservas')
