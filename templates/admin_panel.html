@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel de Administración - Biblioteca ITID{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="display-5">Panel de Administración</h1>
+                <p class="lead text-muted">Bienvenido/a, {{ usuario_actual.username }}</p>
+            </div>
+            <div>
+                <a href="{% url 'reservas:admin_logout' %}" class="btn btn-outline-danger btn-sm">
+                    🚪 Cerrar Sesión
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Estadísticas rápidas -->
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">{{ total_salas }}</h5>
+                <p class="card-text">Salas Totales</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">{{ salas_disponibles }}</h5>
+                <p class="card-text">Salas Disponibles</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">{{ salas_ocupadas }}</h5>
+                <p class="card-text">Salas Ocupadas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5 class="card-title">{{ reservas_hoy }}</h5>
+                <p class="card-text">Reservas Hoy</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Acciones rápidas -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Gestión de Salas</h5>
+            </div>
+            <div class="card-body">
+                <p>Gestión completa de todas las salas del sistema</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'reservas:gestion_salas' %}" class="btn btn-outline-primary">
+                        🏢 Gestionar Salas
+                    </a>
+                    <a href="{% url 'reservas:crear_sala' %}" class="btn btn-outline-success">
+                        ➕ Agregar Nueva Sala
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Gestión de Reservas</h5>
+            </div>
+            <div class="card-body">
+                <p>Ver y gestionar todas las reservas del sistema</p>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'reservas:gestion_reservas' %}" class="btn btn-outline-primary">
+                        📅 Ver Todas las Reservas
+                    </a>
+                    <a href="{% url 'reservas:crear_reserva_manual' %}" class="btn btn-outline-success">
+                        ➕ Crear Reserva Manual
+                     </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Reservas activas -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">🟢 Reservas Activas</h5>
+            </div>
+            <div class="card-body">
+                {% if reservas_activas %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Sala</th>
+                                <th>Estudiante</th>
+                                <th>Hasta</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reserva in reservas_activas %}
+                            <tr>
+                                <td>{{ reserva.sala.nombre }}</td>
+                                <td>{{ reserva.rut_reservante }}</td>
+                                <td>{{ reserva.fecha_hora_termino|date:"H:i" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">No hay reservas activas</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Próximas reservas -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">🟡 Próximas Reservas (2h)</h5>
+            </div>
+            <div class="card-body">
+                {% if proximas_reservas %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Sala</th>
+                                <th>Estudiante</th>
+                                <th>Inicio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reserva in proximas_reservas %}
+                            <tr>
+                                <td>{{ reserva.sala.nombre }}</td>
+                                <td>{{ reserva.rut_reservante }}</td>
+                                <td>{{ reserva.fecha_hora_inicio|date:"H:i" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">No hay reservas próximas</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enlace al Admin Django completo -->
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <div class="alert alert-info">
+            <small>
+                <strong>🔧 Accesos avanzados:</strong>
+                <a href="/admin/" class="text-decoration-none mx-2">Admin Django Completo</a> |
+                <a href="{% url 'reservas:index' %}" class="text-decoration-none mx-2">Ver Sitio Principal</a>
+            </small>
+        </div>
+    </div>
+</div>
+{% endblock %}

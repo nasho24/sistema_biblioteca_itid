@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Reservar {{ sala.nombre }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'reservas:index' %}">Salas</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'reservas:detalle_sala' sala.id %}">{{ sala.nombre }}</a></li>
+                <li class="breadcrumb-item active">Reservar</li>
+            </ol>
+        </nav>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h2 class="h4 mb-0">Reservar Sala: {{ sala.nombre }}</h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="alert alert-info">
+                            <h5 class="alert-heading">Información de la Reserva</h5>
+                            <p class="mb-1"><strong>Sala:</strong> {{ sala.nombre }}</p>
+                            <p class="mb-1"><strong>Capacidad:</strong> {{ sala.capacidad_maxima }} personas</p>
+                            <p class="mb-1"><strong>Duración:</strong> 2 horas máximo</p>
+                            <p class="mb-0"><strong>Hora de inicio:</strong> <span class="current-time"></span></p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <form method="post" id="reservaForm">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.rut_reservante.id_for_label }}" class="form-label">
+                                    RUT del Reservante *
+                                </label>
+                                {{ form.rut_reservante }}
+                                {% if form.rut_reservante.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.rut_reservante.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    Formato: 12.345.678-9
+                                </div>
+                            </div>
+
+                            <div class="alert alert-warning">
+                                <small>
+                                    <strong>⚠️ Importante:</strong> Al reservar, aceptas que la sala será 
+                                    asignada por 2 horas máximo. El sistema liberará automáticamente 
+                                    la sala al cumplirse el tiempo.
+                                </small>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="{% url 'reservas:detalle_sala' sala.id %}" class="btn btn-outline-secondary me-md-2">
+                                    Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-primary btn-reserve-confirm" id="submitBtn">
+                                    Confirmar Reserva
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Script específico para la página de reserva
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('reservaForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (form && submitBtn) {
+        form.addEventListener('submit', function(e) {
+            const originalText = window.app.showButtonLoading(submitBtn, 'Reservando...');
+            
+            // Simular procesamiento (en producción esto sería real)
+            setTimeout(() => {
+                // La reserva se procesa normalmente
+            }, 1000);
+        });
+    }
+});
+</script>
+{% endblock %}

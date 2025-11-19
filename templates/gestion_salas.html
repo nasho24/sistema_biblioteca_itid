@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Salas - Administración{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="display-5">Gestión de Salas</h1>
+                <p class="lead text-muted">Administrar todas las salas del sistema</p>
+            </div>
+            <div>
+                <a href="{% url 'reservas:admin_panel' %}" class="btn btn-outline-secondary btn-sm">
+                    ← Volver al Panel
+                </a>
+                <a href="{% url 'reservas:crear_sala' %}" class="btn btn-success btn-sm">
+                    ➕ Nueva Sala
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'reservas:admin_panel' %}">Panel Principal</a></li>
+        <li class="breadcrumb-item active">Gestión de Salas</li>
+    </ol>
+</nav>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Listado de Salas ({{ salas.count }})</h5>
+    </div>
+    <div class="card-body">
+        {% if salas %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Capacidad</th>
+                        <th>Estado</th>
+                        <th>Habilitada</th>
+                        <th>Disponible</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sala in salas %}
+                    <tr>
+                        <td>
+                            <strong>{{ sala.nombre }}</strong>
+                        </td>
+                        <td>{{ sala.capacidad_maxima }} personas</td>
+                        <td>
+                            <span class="badge bg-{% if sala.estado == 'disponible' %}success{% else %}warning{% endif %}">
+                                {{ sala.get_estado_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if sala.habilitada %}success{% else %}danger{% endif %}">
+                                {{ sala.habilitada|yesno:"Sí,No" }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if sala.disponible_para_reserva %}success{% else %}danger{% endif %}">
+                                {{ sala.disponible_para_reserva|yesno:"Sí,No" }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'reservas:editar_sala' sala.id %}" class="btn btn-outline-primary">
+                                    ✏️ Editar
+                                </a>
+                                <a href="{% url 'reservas:eliminar_sala' sala.id %}" 
+                                   class="btn btn-outline-danger"
+                                   onclick="return confirm('¿Estás seguro de eliminar la sala {{ sala.nombre }}?')">
+                                    🗑️ Eliminar
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <h5 class="text-muted">No hay salas registradas</h5>
+            <p class="text-muted">Comienza agregando la primera sala al sistema.</p>
+            <a href="{% url 'reservas:crear_sala' %}" class="btn btn-primary">
+                ➕ Crear Primera Sala
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

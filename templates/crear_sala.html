@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Nueva Sala - Administración{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'reservas:admin_panel' %}">Panel Principal</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'reservas:gestion_salas' %}">Gestión de Salas</a></li>
+                <li class="breadcrumb-item active">Nueva Sala</li>
+            </ol>
+        </nav>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">➕ Crear Nueva Sala</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre" class="form-label">Nombre de la Sala *</label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" 
+                                   placeholder="Ej: Sala de Estudio A1" required>
+                            <div class="form-text">Nombre único para identificar la sala.</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="capacidad_maxima" class="form-label">Capacidad Máxima *</label>
+                            <input type="number" class="form-control" id="capacidad_maxima" 
+                                   name="capacidad_maxima" min="1" max="50" value="8" required>
+                            <div class="form-text">Número máximo de personas permitidas.</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="estado" class="form-label">Estado *</label>
+                            <select class="form-select" id="estado" name="estado" required>
+                                <option value="disponible">🟢 Disponible</option>
+                                <option value="mantenimiento">🟡 En Mantenimiento</option>
+                            </select>
+                            <div class="form-text">Estado actual de la sala.</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Habilitada</label>
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" id="habilitada" 
+                                       name="habilitada" checked>
+                                <label class="form-check-label" for="habilitada">
+                                    Sala disponible para reservas
+                                </label>
+                            </div>
+                            <div class="form-text">Desactivar para deshabilitar temporalmente.</div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <small>
+                            <strong>💡 Información:</strong> Las salas habilitadas y disponibles 
+                            aparecerán en el sistema de reservas para los estudiantes.
+                        </small>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'reservas:gestion_salas' %}" class="btn btn-outline-secondary me-md-2">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            ✅ Crear Sala
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

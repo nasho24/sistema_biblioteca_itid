@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Salas Disponibles - Biblioteca ITID{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-5">Salas de Estudio Disponibles</h1>
+        <p class="lead text-muted">Hora actual: <span class="current-time">{{ ahora|date:"d/m/Y H:i" }}</span></p>
+    </div>
+</div>
+
+<div class="row">
+    {% for sala in salas %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">{{ sala.nombre }}</h5>
+                <p class="card-text">
+                    <strong>Capacidad:</strong> {{ sala.capacidad_maxima }} personas<br>
+                    <strong>Estado:</strong> 
+                    {% if sala.estado == 'mantenimiento' %}
+                        <span class="badge bg-warning status-badge">En Mantenimiento</span>
+                    {% else %}
+                        {% if sala.disponible %}
+                            <span class="badge bg-success status-badge">Disponible</span>
+                        {% else %}
+                            <span class="badge bg-danger status-badge">Ocupada</span>
+                        {% endif %}
+                    {% endif %}
+                </p>
+                
+                {% if sala.estado != 'mantenimiento' and sala.habilitada %}
+                    <div class="mt-3">
+                        <a href="{% url 'reservas:detalle_sala' sala.id %}" 
+                           class="btn btn-outline-primary btn-sm">
+                            Ver Detalles
+                        </a>
+                        {% if sala.disponible %}
+                            <a href="{% url 'reservas:reservar_sala' sala.id %}" 
+                               class="btn btn-primary btn-sm btn-reserve-confirm">
+                                Reservar Ahora
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            <h4>No hay salas disponibles en este momento</h4>
+            <p class="mb-0">Todas las salas están en mantenimiento o deshabilitadas.</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

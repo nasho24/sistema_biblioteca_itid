@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Reservas - Administración{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="display-5">Gestión de Reservas</h1>
+                <p class="lead text-muted">Administrar todas las reservas del sistema</p>
+            </div>
+            <div>
+                <a href="{% url 'reservas:admin_panel' %}" class="btn btn-outline-secondary btn-sm">
+                    ← Volver al Panel
+                </a>
+                <a href="{% url 'reservas:crear_reserva_manual' %}" class="btn btn-success btn-sm">
+                    ➕ Nueva Reserva
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'reservas:admin_panel' %}">Panel Principal</a></li>
+        <li class="breadcrumb-item active">Gestión de Reservas</li>
+    </ol>
+</nav>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<!-- Filtros -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h6 class="card-title">Filtrar Reservas</h6>
+        <div class="btn-group" role="group">
+            <a href="?estado=todas" class="btn btn-outline-primary {% if filtro_actual == 'todas' %}active{% endif %}">
+                Todas
+            </a>
+            <a href="?estado=activas" class="btn btn-outline-success {% if filtro_actual == 'activas' %}active{% endif %}">
+                Activas
+            </a>
+            <a href="?estado=completadas" class="btn btn-outline-secondary {% if filtro_actual == 'completadas' %}active{% endif %}">
+                Completadas
+            </a>
+            <a href="?estado=hoy" class="btn btn-outline-info {% if filtro_actual == 'hoy' %}active{% endif %}">
+                Hoy
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Listado de Reservas ({{ reservas.count }})</h5>
+    </div>
+    <div class="card-body">
+        {% if reservas %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Sala</th>
+                        <th>Estudiante</th>
+                        <th>Inicio</th>
+                        <th>Término</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reserva in reservas %}
+                    <tr>
+                        <td>
+                            <strong>{{ reserva.sala.nombre }}</strong>
+                            <br><small class="text-muted">Cap: {{ reserva.sala.capacidad_maxima }}</small>
+                        </td>
+                        <td>{{ reserva.rut_reservante }}</td>
+                        <td>
+                            {{ reserva.fecha_hora_inicio|date:"d/m/Y" }}<br>
+                            <small>{{ reserva.fecha_hora_inicio|date:"H:i" }}</small>
+                        </td>
+                        <td>
+                            {{ reserva.fecha_hora_termino|date:"d/m/Y" }}<br>
+                            <small>{{ reserva.fecha_hora_termino|date:"H:i" }}</small>
+                        </td>
+                        <td>
+                            {% if reserva.fecha_hora_termino > now %}
+                                <span class="badge bg-success">Activa</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Completada</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'reservas:eliminar_reserva' reserva.id %}" 
+                               class="btn btn-outline-danger btn-sm"
+                               onclick="return confirm('¿Estás seguro de eliminar esta reserva?')">
+                                🗑️ Eliminar
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <h5 class="text-muted">No hay reservas registradas</h5>
+            <p class="text-muted">No se han encontrado reservas con los filtros aplicados.</p>
+            <a href="{% url 'reservas:crear_reserva_manual' %}" class="btn btn-primary">
+                ➕ Crear Primera Reserva
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

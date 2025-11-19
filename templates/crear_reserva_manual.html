@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Reserva Manual - Administración{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'reservas:admin_panel' %}">Panel Principal</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'reservas:gestion_reservas' %}">Gestión de Reservas</a></li>
+                <li class="breadcrumb-item active">Nueva Reserva</li>
+            </ol>
+        </nav>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">➕ Crear Reserva Manual</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="rut_reservante" class="form-label">RUT del Estudiante *</label>
+                            <input type="text" class="form-control" id="rut_reservante" name="rut_reservante" 
+                                   placeholder="12.345.678-9" required>
+                            <div class="form-text">RUT del estudiante que realiza la reserva.</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="sala" class="form-label">Sala *</label>
+                            <select class="form-select" id="sala" name="sala" required>
+                                <option value="">Seleccionar sala...</option>
+                                {% for sala in salas %}
+                                <option value="{{ sala.id }}">
+                                    {{ sala.nombre }} (Cap: {{ sala.capacidad_maxima }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Solo se muestran salas disponibles.</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="fecha_hora_inicio" class="form-label">Fecha y Hora de Inicio *</label>
+                            <input type="datetime-local" class="form-control" id="fecha_hora_inicio" 
+                                   name="fecha_hora_inicio" required>
+                            <div class="form-text">Fecha y hora cuando comienza la reserva.</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="fecha_hora_termino" class="form-label">Fecha y Hora de Término *</label>
+                            <input type="datetime-local" class="form-control" id="fecha_hora_termino" 
+                                   name="fecha_hora_termino" required>
+                            <div class="form-text">Fecha y hora cuando termina la reserva.</div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <small>
+                            <strong>💡 Información:</strong> El sistema verificará automáticamente 
+                            que la sala esté disponible en el horario seleccionado.
+                        </small>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'reservas:gestion_reservas' %}" class="btn btn-outline-secondary me-md-2">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            ✅ Crear Reserva
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Establecer valores por defecto para fecha/hora
+document.addEventListener('DOMContentLoaded', function() {
+    const now = new Date();
+    
+    // Formatear para input datetime-local (YYYY-MM-DDTHH:MM)
+    const startDateTime = new Date(now.getTime() + 30 * 60000); // 30 minutos desde ahora
+    const endDateTime = new Date(startDateTime.getTime() + 2 * 60 * 60000); // 2 horas después
+    
+    document.getElementById('fecha_hora_inicio').value = startDateTime.toISOString().slice(0, 16);
+    document.getElementById('fecha_hora_termino').value = endDateTime.toISOString().slice(0, 16);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Sala - Administración{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'reservas:admin_panel' %}">Panel Principal</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'reservas:gestion_salas' %}">Gestión de Salas</a></li>
+                <li class="breadcrumb-item active">Editar {{ sala.nombre }}</li>
+            </ol>
+        </nav>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">✏️ Editar Sala: {{ sala.nombre }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre" class="form-label">Nombre de la Sala *</label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" 
+                                   value="{{ sala.nombre }}" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="capacidad_maxima" class="form-label">Capacidad Máxima *</label>
+                            <input type="number" class="form-control" id="capacidad_maxima" 
+                                   name="capacidad_maxima" value="{{ sala.capacidad_maxima }}" 
+                                   min="1" max="50" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="estado" class="form-label">Estado *</label>
+                            <select class="form-select" id="estado" name="estado" required>
+                                <option value="disponible" {% if sala.estado == 'disponible' %}selected{% endif %}>
+                                    🟢 Disponible
+                                </option>
+                                <option value="mantenimiento" {% if sala.estado == 'mantenimiento' %}selected{% endif %}>
+                                    🟡 En Mantenimiento
+                                </option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Habilitada</label>
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" id="habilitada" 
+                                       name="habilitada" {% if sala.habilitada %}checked{% endif %}>
+                                <label class="form-check-label" for="habilitada">
+                                    Sala disponible para reservas
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <small>
+                            <strong>⚠️ Advertencia:</strong> Si deshabilitas una sala, los estudiantes 
+                            no podrán verla ni reservarla en el sistema.
+                        </small>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'reservas:gestion_salas' %}" class="btn btn-outline-secondary me-md-2">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            💾 Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

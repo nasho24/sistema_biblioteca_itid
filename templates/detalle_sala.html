@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ sala.nombre }} - Detalles{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'reservas:index' %}">Salas</a></li>
+                <li class="breadcrumb-item active">{{ sala.nombre }}</li>
+            </ol>
+        </nav>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h2 class="h4 mb-0">{{ sala.nombre }}</h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Capacidad máxima:</strong> {{ sala.capacidad_maxima }} personas</p>
+                        <p><strong>Estado general:</strong> 
+                            <span class="badge bg-{% if sala.estado == 'disponible' %}success{% else %}warning{% endif %}">
+                                {{ sala.get_estado_display }}
+                            </span>
+                        </p>
+                        <p><strong>Habilitada:</strong> 
+                            <span class="badge bg-{% if sala.habilitada %}success{% else %}danger{% endif %}">
+                                {{ sala.habilitada|yesno:"Sí,No" }}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Disponibilidad actual:</strong></p>
+                        {% if disponible %}
+                            <div class="alert alert-success">
+                                <strong>✅ Disponible</strong><br>
+                                Esta sala está libre para reservar.
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <strong>⏳ No disponible</strong><br>
+                                Esta sala está ocupada o no se puede reservar en este momento.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Reserva activa -->
+                {% if reserva_activa %}
+                <div class="alert alert-info mt-3">
+                    <h5 class="alert-heading">Reserva en Curso</h5>
+                    <p class="mb-1"><strong>RUT:</strong> {{ reserva_activa.rut_reservante }}</p>
+                    <p class="mb-1"><strong>Inicio:</strong> {{ reserva_activa.fecha_hora_inicio|date:"d/m/Y H:i" }}</p>
+                    <p class="mb-0"><strong>Término:</strong> {{ reserva_activa.fecha_hora_termino|date:"d/m/Y H:i" }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Próximas reservas -->
+                {% if proximas_reservas %}
+                <div class="mt-4">
+                    <h5>Próximas Reservas (24 horas)</h5>
+                    <div class="list-group">
+                        {% for reserva in proximas_reservas %}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ reserva.rut_reservante }}</h6>
+                                <small>{{ reserva.fecha_hora_inicio|date:"H:i" }}</small>
+                            </div>
+                            <p class="mb-1">Duración: 2 horas</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                {% if disponible and sala.habilitada and sala.estado == 'disponible' %}
+                    <a href="{% url 'reservas:reservar_sala' sala.id %}" class="btn btn-primary btn-lg">
+                        Reservar Esta Sala
+                    </a>
+                {% else %}
+                    <button class="btn btn-secondary btn-lg" disabled>
+                        No Disponible para Reserva
+                    </button>
+                {% endif %}
+                <a href="{% url 'reservas:index' %}" class="btn btn-outline-secondary">
+                    Volver a Salas
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Información General</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    Cada reserva tiene una duración máxima de <strong>2 horas</strong>.
+                </p>
+                <p class="card-text">
+                    Las salas se liberan automáticamente al cumplirse el tiempo de reserva.
+                </p>
+                <p class="card-text">
+                    Hora actual del sistema: <strong>{{ ahora|date:"H:i" }}</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
