@@ -80,7 +80,7 @@ TIME_ZONE = 'America/Santiago'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
+# Static files (Css, Js, Img)
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static",

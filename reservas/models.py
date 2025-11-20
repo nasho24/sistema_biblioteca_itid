@@ -14,7 +14,7 @@ class Sala(models.Model):
     habilitada = models.BooleanField(default=True)
     
     class Meta:
-        db_table = 'salas'  # Nombre específico para Oracle
+        db_table = 'salas' 
     
     def __str__(self):
         return f"{self.nombre} (Capacidad: {self.capacidad_maxima})"

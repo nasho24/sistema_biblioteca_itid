@@ -119,11 +119,6 @@ def admin_panel(request):
     """
     Panel de administración personalizado para bibliotecarios
     """
-    # Quitar la verificación de staff si quieres acceso libre
-    # if not request.user.is_staff:
-    #     messages.error(request, 'Acceso restringido al personal autorizado.')
-    #     return redirect('reservas:index')
-    
     # Estadísticas
     total_salas = Sala.objects.count()
     salas_disponibles = Sala.objects.filter(habilitada=True, estado='disponible').count()
@@ -161,11 +156,6 @@ def admin_login(request):
     """
     Login personalizado para el panel de administración
     """
-    # COMENTA ESTO temporalmente:
-    # Si ya está autenticado, redirigir al panel
-    # if request.user.is_authenticated and request.user.is_staff:
-    #     return redirect('reservas:admin_panel')
-    
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -187,10 +177,8 @@ def admin_logout(request):
     """
     logout(request)
     messages.success(request, 'Sesión cerrada correctamente.')
-    return redirect('reservas:admin_login')  # ← Redirigir a NUESTRO login
+    return redirect('reservas:admin_login') 
 
-# @login_required
-# @user_passes_test(lambda u: u.is_staff)
 def admin_panel(request):
     """
     Panel de administración personalizado para bibliotecarios
@@ -241,7 +229,6 @@ def gestion_salas(request):
     salas = Sala.objects.all().order_by('nombre')
     
     if request.method == 'POST':
-        # Aquí puedes agregar funcionalidad para crear/editar salas
         pass
     
     context = {
@@ -346,7 +333,7 @@ def gestion_reservas(request):
         'reservas': reservas,
         'filtro_actual': filtro_estado,
         'usuario_actual': request.user,
-        'now': timezone.now(),  # ← AÑADE ESTO
+        'now': timezone.now(),
     }
     return render(request, 'gestion_reservas.html', context)
 
@@ -448,7 +435,6 @@ def reducir_tiempo_reserva(request, reserva_id, minutos):
     
     return redirect('reservas:gestion_reservas')
 
-#@staff_required
 def finalizar_reserva_ahora(request, reserva_id):
     """
     Finalizar una reserva inmediatamente
